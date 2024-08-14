@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Module providing a Cache class for Redis operations with method call counting and history."""
+"""Module providing a Cache class for Redis operations with method call counting, history, and replay."""
 
 import redis
 import uuid
@@ -51,6 +51,26 @@ def call_history(method: Callable) -> Callable:
 
         return output
     return wrapper
+
+
+def replay(method: Callable):
+    """
+    Display the history of calls of a particular function.
+
+    Args:
+        method: The method to replay.
+    """
+    redis_instance = redis.Redis()
+    method_name = method.__qualname__
+    inputs = redis_instance.lrange(f"{method_name}:inputs", 0, -1)
+    outputs = redis_instance.lrange(f"{method_name}:outputs", 0, -1)
+    calls_count = redis_instance.get(method_name).decode("utf-8")
+
+    print(f"{method_name} was called {calls_count} times:")
+    for input_args, output in zip(inputs, outputs):
+        input_str = input_args.decode("utf-8")
+        output_str = output.decode("utf-8")
+        print(f"{method_name}(*{input_str}) -> {output_str}")
 
 
 class Cache:
