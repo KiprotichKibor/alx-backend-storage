@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Module providing a Cache class for Redis operations with method call counting."""
+"""Module providing a Cache class for Redis operations with method call counting and history."""
 
 import redis
 import uuid
@@ -25,14 +25,43 @@ def count_calls(method: Callable) -> Callable:
     return wrapper
 
 
+def call_history(method: Callable) -> Callable:
+    """
+    Decorator to store the history of inputs and outputs for a function.
+
+    Args:
+        method: The method to be decorated.
+
+    Returns:
+        Callable: The wrapped method.
+    """
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        input_key = f"{method.__qualname__}:inputs"
+        output_key = f"{method.__qualname__}:outputs"
+
+        # Store input arguments
+        self._redis.rpush(input_key, str(args))
+
+        # Execute the wrapped function
+        output = method(self, *args, **kwargs)
+
+        # Store output
+        self._redis.rpush(output_key, str(output))
+
+        return output
+    return wrapper
+
+
 class Cache:
-    """A class for caching data using Redis with method call counting."""
+    """A class for caching data using Redis with method call counting and history."""
 
     def __init__(self):
         """Initialize the Cache with a Redis client and flush the database."""
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @call_history
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
