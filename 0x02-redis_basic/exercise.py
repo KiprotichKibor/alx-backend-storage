@@ -1,19 +1,39 @@
 #!/usr/bin/env python3
-"""Module providing a Cache class for Redis operations."""
+"""Module providing a Cache class for Redis operations with method call counting."""
 
 import redis
 import uuid
 from typing import Union, Callable, Optional
+from functools import wraps
+
+
+def count_calls(method: Callable) -> Callable:
+    """
+    Decorator to count how many times a method is called.
+
+    Args:
+        method: The method to be decorated.
+
+    Returns:
+        Callable: The wrapped method.
+    """
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        key = method.__qualname__
+        self._redis.incr(key)
+        return method(self, *args, **kwargs)
+    return wrapper
 
 
 class Cache:
-    """A class for caching data using Redis."""
+    """A class for caching data using Redis with method call counting."""
 
     def __init__(self):
         """Initialize the Cache with a Redis client and flush the database."""
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         Store the input data in Redis using a random key.
