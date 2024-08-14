@@ -5,8 +5,19 @@ Where can I learn Python?
 import pymongo
 
 
-def schools_by_topic(mongo_collection, topic):
+def update_topics(mongo_collection, name, topics):
     """
-    find by specific value
+    Changes all topics of a school document based on the name.
+
+    Args:
+    mongo_collection: pymongo collection object
+    name (str): The school name to update
+    topics (list of str): The list of topics approached in the school
+
+    Returns:
+    None
     """
-    return mongo_collection.find({"topics":  {"$in": [topic]}})
+    mongo_collection.update_many(
+        {"name": name},
+        {"$set": {"topics": topics}}
+    )
