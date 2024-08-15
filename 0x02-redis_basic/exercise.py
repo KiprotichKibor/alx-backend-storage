@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Module providing a Cache class for Redis operations with method call counting, history, and replay."""
+"""Module providing a Cache
+class for Redis operations with method call counting, history, and replay."""
 
 import redis
 import uuid
@@ -74,7 +75,8 @@ def replay(method: Callable):
 
 
 class Cache:
-    """A class for caching data using Redis with method call counting and history."""
+    """A class for caching data using Redis with method call counting
+    and history."""
 
     def __init__(self):
         """Initialize the Cache with a Redis client and flush the database."""
@@ -88,7 +90,8 @@ class Cache:
         Store the input data in Redis using a random key.
 
         Args:
-            data: The data to be stored. Can be a string, bytes, integer, or float.
+            data: The data to be stored. Can be a string, bytes,
+            integer, or float.
 
         Returns:
             str: The randomly generated key used to store the data.
@@ -97,17 +100,20 @@ class Cache:
         self._redis.set(key, data)
         return key
 
-    def get(self, key: str, 
-            fn: Optional[Callable] = None) -> Union[str, bytes, int, float, None]:
+    def get(self, key: str,
+            fn: Optional[Callable] = None) -> Union[
+                    str, bytes, int, float, None]:
         """
-        Retrieve data from Redis for the given key and apply optional conversion.
+        Retrieve data from Redis for the given key and apply
+        optional conversion.
 
         Args:
             key: The key to retrieve data for.
             fn: Optional callable to convert the retrieved data.
 
         Returns:
-            The retrieved data, optionally converted, or None if the key doesn't exist.
+            The retrieved data, optionally converted,
+            or None if the key doesn't exist.
         """
         value = self._redis.get(key)
         if value is None:
